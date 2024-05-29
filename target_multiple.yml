@@ -1,0 +1,33 @@
+---
+# this i wrote to target multiple servers to do multiple things
+- name: webserver
+  hosts: webservers # make sure there is a webserver list file
+  remote_user: root # this is saying that you are running it as root and not become
+  # start writing your task below
+  task:
+  - name: Ensure apache is at the latest version
+    apt: # this is for apt package managers
+      name: apache2
+      state: latest
+  # write the apache config file
+  - name: write teh config file
+    template:
+      src: /srv/apache2.j2
+      dest: /etc/apache2.conf
+
+# Install database on the database servers, this could also be on the webserver
+
+- name: Update or Install Database engine
+  hosts: webservers # you can also define the file name with the db servers
+  remote_user: root # you can use become true to use become instead of the root user
+  # start defining the tasks for the db server machines
+  tasks:
+  - name: install or update db engine
+    apt:
+      name: mysql # installs mysql server engine
+      state: latest # if it installed update to the latest
+  # make sure the service is started
+  - name: make sure it is running
+    service:
+      name: mysql
+      state: started

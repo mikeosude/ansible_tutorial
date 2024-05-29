@@ -1,0 +1,13 @@
+# this is the file that would install the apache file
+---
+- name:  web servers
+  hosts: all
+ # this runs the command as root
+  remote_user: root
+  # or you can use this to run it with become
+  become: true
+  tasks:
+  - name: install apache2 package
+    apt:
+      name: apache2
+
