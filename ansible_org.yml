@@ -1,0 +1,36 @@
+---
+# Run on all hosts
+- hosts: all
+  become: true # Run as sudo
+  tasks: # the tasks that would run are below
+  #tasks for ubuntu
+  - name: update repo
+    apt:
+		update_cache: yes
+	when: ansible_distribution_version == "Ubuntu"
+	
+  - name: install apache2
+    apt:
+		name: apache2
+		state: latest
+	when: ansible_distribution_version == "Ubuntu"
+	
+  - name: add php support for apache
+    apt:
+		name: libapache2-mod-php
+		state: latest
+	when: ansible_distribution_version == "Ubuntu"
+	
+  # tasks for centos
+  
+  - name: update the yum repo
+    dnf:
+		name: httpd
+		state: latest
+	when: ansible_distribution_version == "CentOS"
+	
+  - name: add php support
+    dnf:
+		name: php
+		state: latest
+	when: ansible_distribution_version == "CentOS"

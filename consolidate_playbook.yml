@@ -1,0 +1,32 @@
+# this is for consolidating the commands instead of having too many
+---
+
+- hosts: all
+  become: true
+  tasks:
+	  - name: Update the APT Cache
+	    apt:
+			update_cache: yes
+		when: ansible_distribution_version == "Ubuntu"
+		
+	  - name: install apache2 and php on ubuntu
+	    apt:
+			name:
+				- apache2
+				- libapache2-mod-php
+			state: latest
+		when: ansible_distribution_version == "Ubuntu"
+	
+	  # Install on CentOS
+	  - name: Update the CentOS repo cache
+	    dnf:
+			update_cache: yes
+		when: ansible_distribution_version == "CentOS"
+		
+	  - name: Install apache and php on CentOS
+	    dnf:
+			name:
+				- httpd
+				- php
+			state: latest
+		when: ansible_distribution_version == "CentOS"

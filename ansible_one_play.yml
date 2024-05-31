@@ -1,0 +1,161 @@
+# this is for using one play to do everything
+---
+- host: all
+  become: true
+  tasks:
+	  - name: install apache2 and php
+	    package:
+			name:
+				- "{{ apache_package }}"
+				- "{{ php_package }}"
+			state: latest
+			update_cache: yes
+			
+		# the package module above is for ansible that uses the package manager for the distro
+		# the smaller the playbook the faster the run
+		
+		
+# cleaning the playbook and this is a different yml file and i am tired to creating new files everytime
+
+---
+- host: all
+  become: true
+  tasks:
+	  - name: install stuff
+	    package:
+			
+			
+# targeting nodes with one playbook
+---
+- hosts: all
+  become: true
+  tasks:
+	  - name: install on ubuntu
+	    apt:
+			name:
+				- apache2
+				- libapache2-mod-php
+			state: latest
+			update_cache: yes
+		when: ansible_distribution  == "Ubuntu"
+		
+	  - name: install on centos
+	    dnf:
+			name:
+				- httpd
+				- php
+			state: latest
+			update_cache: yes
+		when: ansible_distribution == "CentOS"
+		
+		
+# for targeting different hosts host all is for all the servers in the host
+# pre_task makes the tasks run first
+---
+- hosts: all
+  become: true
+  pre_tasks:
+	  
+	  - name: install updates (CentOS)
+	    dnf:
+			update_only: yes
+			update_cache: yes
+		when: ansible_distribution == "CentOS"
+		
+	  - name: Install Updates (Ubuntu)
+	    apt:
+			upgrade: dist
+			update_cache: yes
+		when: ansible_distribution == "Ubuntu"
+		
+# these are tasks for the websers only
+- hosts: web_servers
+  become: true
+  tasks:
+
+	  
+# these are tasks for the database servers only
+- hosts: database_servers
+  become: true
+  tasks:
+	  - name: install MariaDB (CentOS)
+	    dnf:
+			name: mariadb
+			state: latest
+		when: ansible_distribution == "CentOS"
+	  - name: Install Mariadb (Ubuntu)
+	    apt:
+			name: mariadb-server
+			state: latest
+		when: ansible_distribution == "Ubuntu"
+
+# these are tasks for the file servers
+- hosts: file_servers
+  become: true
+  tasks:
+		
+	  - name: install smb package
+	    package:
+			name:
+				- samba
+			state: latest
+			
+			
+			
+# tags
+tags: always
+
+---
+- hosts: all
+  become: true
+  pre_tasks:
+	  
+	  - name: install updates (CentOS)
+	    tags: always
+	    dnf:
+			update_only: yes
+			update_cache: yes
+		when: ansible_distribution == "CentOS"
+		
+	  - name: Install Updates (Ubuntu)
+	    tags: always
+	    apt:
+			upgrade: dist
+			update_cache: yes
+		when: ansible_distribution == "Ubuntu"
+		
+# these are tasks for the websers only
+- hosts: web_servers
+  become: true
+  tasks:
+
+	  
+# these are tasks for the database servers only ansible-playbook --list-tags playbook.yml command
+# to run a command to target specific servers ansible-playbook --tags centos --ask-become-pass playbook.yml
+# to target multiple tags --tags "db,apache" and it will target the plays that have the tags
+- hosts: database_servers
+  become: true
+  tasks:
+	  - name: install MariaDB (CentOS)
+	    tags: centos,db,mariadb
+	    dnf:
+			name: mariadb
+			state: latest
+		when: ansible_distribution == "CentOS"
+	  - name: Install Mariadb (Ubuntu)
+	    tags: ubuntu,db,mariadb
+	    apt:
+			name: mariadb-server
+			state: latest
+		when: ansible_distribution == "Ubuntu"
+
+# these are tasks for the file servers
+- hosts: file_servers
+  become: true
+  tasks:
+		
+	  - name: install smb package
+	    package:
+			name:
+				- samba
+			state: latest

@@ -1,0 +1,27 @@
+# consolidate even more
+---
+- host: all
+  become: true
+  tasks:
+	- name: Update APT repo
+	  apt:
+		update_cache: true
+	  when: ansible_distribution_version == "Ubuntu"
+		
+	- name: Install apps
+	  apt:
+		  name:
+			  - apache2
+			  - libapache2-mod-php
+		  state: latest
+		  update_cache: yes
+	  when: ansible_distribution_version == "Ubuntu"
+	# for CentOS  
+	- name: install apps and update dnf cache
+	  dnf:
+		  name:
+			  - httpd
+			  - php
+		  state: latest
+		  update_cache: true
+	  when: ansible_distribution_version == "CentOS"

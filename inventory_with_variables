@@ -1,0 +1,17 @@
+# this is a list of all the inventory for the servers
+10.10.0.140 apache_package=apache2 php_package=libapache2-mod-php
+10.10.0.141 apache_package=apache2 php_package=libapache2-mod-php
+10.10.0.142 apache_package=httpd php_package=php
+10.10.0.143 apache_package=httpd php_package=php
+
+# the first 2 are ubuntu and the last 2 are centos
+
+# creating host groups
+[web_servers]
+
+
+[database_servers]
+
+[file_servers]
+
+3 using the square brackets, you can declare the server hosts and a server can be a member of multiple groups
