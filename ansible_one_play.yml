@@ -153,7 +153,24 @@ tags: always
 			group: www-data
 			mode: 0644
 
-	  
+# another section that will download and extract a file to a directory
+# remember the ssh-copy-id -i command
+- hosts: workstations
+  become: true
+  tasks:
+	  - name: install unzip
+	    package:
+			name: unzip
+			
+	  - name: install terraform
+	    unarchive:
+			src: https://releases.hashicorp.com/terraform/0.12.28/terraform_o.12.28_linux_amd64.zip
+			dest: /usr/local/bin
+			remote_src: yes
+			mode: 0755
+			owner: root
+			group: root
+			
 # these are tasks for the database servers only ansible-playbook --list-tags playbook.yml command
 # to run a command to target specific servers ansible-playbook --tags centos --ask-become-pass playbook.yml
 # to target multiple tags --tags "db,apache" and it will target the plays that have the tags
@@ -183,3 +200,80 @@ tags: always
 			name:
 				- samba
 			state: latest
+			
+			
+# managing services with ansible
+- host: database_servers
+  become: true
+  tasks:
+	  - name: enable httpd (CentOS)
+	    tags: centos,httpd,apache
+		service:
+			name: httpd
+			state: started # i am guessing there is enabled too
+			enabled: yes
+		when: ansible_distribution == "CentOS"
+		
+		# for restarting a service
+		
+- host: web_servers
+  become: true
+  tasks:
+	  - name: change e-mail address for admin
+	    tags: apache,centos,httpd
+		lineinfile: # this changes line in a file and you use the line number
+			path: /etc/httpd/conf/config.conf # path to the file you want to mod
+			regexp: '^ServerAdmin' # regular expression ^ means that it has to start with
+			line: ServerAdmin sombody@somewhere.here # the change you want made
+		when: ansible_distribution == "CentOS"
+		register: httpd # capture the state in a variable
+		
+	  - name: restart httpd (CentOS)
+	    tags: apache,centos,httpd
+		service:
+			name: httpd
+			state: restarted
+		when: httpd.changed # if the above state changed it would restart the service
+		# make sure to run the playbok again to make sure that it does not keep adding new lines everytime. dont change the variable and make sure to declare new variables everytime.
+		
+		
+# Adding users and bootstrapping
+# adding users
+---
+- hosts: new_machines
+  become: true
+  tags: always
+  tasks:
+	  - name: add users
+	    tags: always
+		user:
+			name: mike
+			groups: root
+			
+	# adding SSH key
+	  - name: add ssh key for mike
+	    tags: always
+		authorized_key:
+			user: mike
+			key: "ssh-id and all the PK content" # authorized key files
+			
+	# making the user run sudo without password
+	  - name: add sudoers file for mike
+	    tag: always
+	    copy:
+			src: sudoer_mike
+			dest: /etc/sudoers.d/mike
+			owner: root
+			group: root
+			mode: 0440
+			# in the sudoer_mike file enter the following "mike ALL=(ALL) NOPASSWD: ALL"
+			
+# edit the ansible config file and add remote_user = mike
+# then run ansible-playbook playbook.yml and there would be no need for a password 
+
+changed_when: false # this allows you to have control over what is known as changed will not be a change
+# bootstrap playbook before the other stuff
+# create bootstrap.yml
+---
+# make sure all the updates are here in the bootstrap file
+# then add the user creation script make sure the files directory is there
