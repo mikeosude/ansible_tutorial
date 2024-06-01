@@ -128,6 +128,30 @@ tags: always
 - hosts: web_servers
   become: true
   tasks:
+	  - name: install apache (CentOS)
+	    dnf:
+			name:
+				- httpd
+				- php
+			state: latest
+		when: distribution_version == "CentOS"
+		
+	  - name: install apache (Ubuntu)
+	    apt:
+			name:
+				- apache2
+				- libapache-mod-php
+			state: latest
+		when: distribution_version == "Ubuntu"
+	# added for copying files to the server
+	  - name: copy site files
+	    tags: apache,apache2,httpd
+		copy:
+			src: default_site.html # the name of the file to be copied the folder is assumed
+			dest: /var/www/html/index.html # file name does not have to be the same as the source
+			owner: www-data
+			group: www-data
+			mode: 0644
 
 	  
 # these are tasks for the database servers only ansible-playbook --list-tags playbook.yml command
