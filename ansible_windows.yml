@@ -27,3 +27,4 @@
 			path: c:\temp\7z.msi
 			state: present
 		  
+# host variables which is in the host_vars
