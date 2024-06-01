@@ -1,0 +1,29 @@
+---
+# working with wndows
+- hosts: windows
+  tags: windows
+  become: true
+  tasks:
+	  # install 7zip chocolatey
+	  - name: install with choco
+	    win_chocolatey:
+			name: 7zip
+			state: present
+			
+	  # uninstall 7zip with choco
+	  - name: uninstall 7zip choco
+	    win_chocolatey:
+			name: 7zip
+			state: abscent
+			
+			
+	  # install using win_package
+	  - name: download with url msi
+	    win_get_url:
+			url: the msi url
+			dest: c:\temp\7z.msi
+	  - name: install the msi
+	    win_package:
+			path: c:\temp\7z.msi
+			state: present
+		  
